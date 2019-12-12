@@ -1,6 +1,38 @@
-from flask import Flask,render_template
+from flask import Flask,render_template,url_for,request
 from prettytable import PrettyTable
+import base64
 app = Flask(__name__)
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+
+@app.route('/')
+@app.route('/home')
+def home():
+    return render_template('home.html')
+
+
+
+
+@app.route('/titanic')
+def titanic():
+    graph = request.args.get('graph')
+    if graph == "1":
+        return render_template('titanic.html')
+    elif graph == "0":
+        to_html_converter('/titanic')
+        return render_template('table.html')
+    else:
+        return render_template('home.html')
+        
+
+
+
+
+
 
 def to_html_converter(path):
     path = 'data/{}.csv'.format(path)
@@ -30,42 +62,24 @@ def to_html_converter(path):
 
 
 
-@app.route('/')
-@app.route('/home')
-def home():
-    return render_template('home.html')
+titan = pd.read_csv('data/titanic.csv')
+data = titan['Age'].fillna(method='ffill')
+
+bins = np.arange(0,100,5)
+plt.xlim([min(data)-5,max(data)+5])
+plt.hist(data,bins=bins,alpha = 0.5)
+plt.xlabel('Age')
+plt.ylabel('count')
+plt.savefig('./static/fig_1.png')
 
 
 
-@app.route('/airbase_data')
-def airbase():
-    to_html_converter('airbase_data')
-    return render_template('table.html')
-
-
-
-@app.route('/titanic')
-def titanic():
-    to_html_converter('titanic')
-    return render_template('table.html')
-
-
-
-@app.route('/flowdata')
-def flowdata():
-    to_html_converter('flowdata')
-    return render_template('table.html')
-
-
-
-@app.route('/melb_data')
-def melb():
-    to_html_converter('melb_data')
-    return render_template('table.html')
-
-
-
-
+import seaborn as sns
+import matplotlib.pyplot as plt 
+data = sns.load_dataset("data/titanic")
+plt.figure(figsize=(8,8))
+ax = sns.violinplot(x='age',y='sex',data = data)
+plt.savefig('./static/fig_2.png')
 
 
 if __name__=='__main__':
